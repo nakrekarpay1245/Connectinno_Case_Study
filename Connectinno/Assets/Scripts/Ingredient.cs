@@ -7,8 +7,7 @@ using DG.Tweening;
 public class Ingredient : MonoBehaviour
 {
     [Header("Type")]
-    [SerializeField]
-    private Sprite sprite;
+    public Sprite ingredientIcon;
 
     [SerializeField]
     private string ingredientName;
@@ -47,21 +46,21 @@ public class Ingredient : MonoBehaviour
     }
 
     /// <summary>
-    /// The size raises from 0 to 0.5
+    /// The size raises from zero to normal
     /// </summary>
     public void StartIngredient()
     {
-        transform.DOScale(0.5f, 0.15f);
-        Debug.Log(name + "started");
+        transform.DOScale(1, 0.15f);
+        // Debug.Log(name + "started");
     }
 
     /// <summary>
-    /// The size raises from 0.5 to 0
+    /// The size raises from normal to zero
     /// </summary>
     public void FinishIngredient()
     {
         transform.DOScale(0, 0.15f);
-        Debug.Log(name + "finished");
+        // Debug.Log(name + "finished");
     }
 
     /// <summary>
@@ -78,8 +77,8 @@ public class Ingredient : MonoBehaviour
     /// </summary>
     public void Grab()
     {
-        Debug.Log("Grab");
-        // isGrab = true;
+        // Debug.Log("Grab");
+        isGrab = true;
     }
 
     /// <summary>
@@ -97,7 +96,7 @@ public class Ingredient : MonoBehaviour
     /// </summary>
     public void Leave()
     {
-        Debug.Log("Leave");
+        // Debug.Log("Leave");
         if (isGrab)
         {
             isGrab = false;
@@ -105,10 +104,10 @@ public class Ingredient : MonoBehaviour
             {
                 BackToLastPosition();
             }
-            else
-            {
-                Debug.Log("Nothing! ");
-            }
+            //else
+            //{
+            //    Debug.Log("Nothing! ");
+            //}
         }
     }
 
@@ -117,7 +116,7 @@ public class Ingredient : MonoBehaviour
     /// </summary>
     public void PutToPan()
     {
-        Debug.Log("Put To Pan");
+        // Debug.Log("Put To Pan");
         if (!isInPan)
         {
             transform.DOMove(panTransform.position, 0.15f);
@@ -129,7 +128,7 @@ public class Ingredient : MonoBehaviour
     /// </summary>
     public void BackToLastPosition()
     {
-        Debug.Log("Back To Last Position");
+        // Debug.Log("Back To Last Position");
         transform.DOMove(lastPosition, 0.5f);
     }
 
@@ -138,7 +137,7 @@ public class Ingredient : MonoBehaviour
     /// </summary>
     private void ControlMeal()
     {
-        Debug.Log("Control Meal");
+        // Debug.Log("Control Meal");
         if (MealManager.singleton.ControlMeal(this))
         {
             // Debug.Log("Nothing! ");
@@ -154,7 +153,7 @@ public class Ingredient : MonoBehaviour
     {
         if (other.gameObject.CompareTag("Pan"))
         {
-            Debug.Log("In Pan");
+            // Debug.Log("In Pan");
             isInPan = true;
             ControlMeal();
         }
@@ -164,7 +163,7 @@ public class Ingredient : MonoBehaviour
     {
         if (other.gameObject.CompareTag("Pan"))
         {
-            Debug.Log("Out Pan");
+            // Debug.Log("Out Pan");
             isInPan = false;
             ControlMeal();
         }

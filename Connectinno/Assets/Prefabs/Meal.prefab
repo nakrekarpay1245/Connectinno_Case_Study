@@ -110,11 +110,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: afab43da7b3796243a2bb9f07b8327b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mealNameList:
+  - SOUP
+  - SALAD
+  - KEBAB
   ingredientPrefabs:
-  - {fileID: 6336557508318370220, guid: 2346792eaf266ac4e88c5759b0561561, type: 3}
-  - {fileID: 1098992099518970406, guid: 6a4a3d4f7609447429ac6c8431937189, type: 3}
-  - {fileID: -6273085206264010721, guid: 22abddbe594afe543be2c1f4ee81c32f, type: 3}
-  - {fileID: -3314513483329304940, guid: 8a8009f12136ae5418cb8d9af9d6e4ea, type: 3}
-  - {fileID: 1493167619174969492, guid: 06dd644d54c6bed42a551324c086bf80, type: 3}
+  - {fileID: 617375546036670668, guid: f32cfc5d33b3cba42b3246bfca101366, type: 3}
+  - {fileID: 6169412167692333211, guid: e7d0965fd7ecae84d8b5532a4fbac443, type: 3}
+  - {fileID: 3939841939357973004, guid: 2677050267f42194aa68872dea220316, type: 3}
+  - {fileID: 4548963236980584729, guid: 8fc9eca082f605e42aa9c6fd8939994b, type: 3}
+  - {fileID: 8207105436113874242, guid: 13e655d53dcb98241b0a54f974ea098f, type: 3}
   ingredientsInMeal: []
   ingredientsCount: 

@@ -1,9 +1,19 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 
 public class MealManager : MonoBehaviour
 {
+    [Header("User Interface")]
+    [SerializeField]
+    private List<Image> ingredientIconList;
+    [SerializeField]
+    private List<TextMeshProUGUI> ingredientCountTextList;
+    [SerializeField]
+    private TextMeshProUGUI mealNameText;
+
     [Range(2, 5)]
     [SerializeField]
     private int mealCount;
@@ -11,7 +21,7 @@ public class MealManager : MonoBehaviour
     [SerializeField]
     private Meal mealPrefab;
     [SerializeField]
-    private List<Transform> mealTransforms;
+    private List<Transform> mealTransformList;
 
     public List<Meal> mealList;
 
@@ -36,6 +46,10 @@ public class MealManager : MonoBehaviour
         {
             GenerateMeal();
         }
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            FoodGenerator.singleton.GenerateObjectRandomPosition(100);
+        }
     }
 
     /// <summary>
@@ -45,11 +59,14 @@ public class MealManager : MonoBehaviour
     {
         for (int i = 0; i < mealCount; i++)
         {
-            Meal _meal = Instantiate(mealPrefab, mealTransforms[i].position, Quaternion.identity);
+            Meal _meal = Instantiate(mealPrefab, mealTransformList[i].position, Quaternion.identity);
             mealList.Add(_meal);
         }
         currentMeal = mealList[0];
         currentMeal.SetMeal();
+        DisplayMealIngredients(currentMeal.ingredientsInMeal);
+        DisplayIngredientCounts(currentMeal.ingredientsCount);
+        DisplayMealName(currentMeal.GetMealName());
     }
 
     /// <summary>
@@ -57,7 +74,21 @@ public class MealManager : MonoBehaviour
     /// </summary>
     public void NextMeal()
     {
-        currentMeal = mealList[mealIndex];
+        mealIndex++;
+        if (mealIndex >= mealCount)
+        {
+            Debug.Log("Level Completed");
+            LevelManager.singleton.FinishLevel(true);
+        }
+        else
+        {
+            Debug.Log("Next Meal");
+            currentMeal = mealList[mealIndex];
+            currentMeal.SetMeal();
+            DisplayMealIngredients(currentMeal.ingredientsInMeal);
+            DisplayIngredientCounts(currentMeal.ingredientsCount);
+            DisplayMealName(currentMeal.GetMealName());
+        }
     }
 
     /// <summary>
@@ -68,5 +99,37 @@ public class MealManager : MonoBehaviour
     public bool ControlMeal(Ingredient _ingredient)
     {
         return currentMeal.ControlMeal(_ingredient);
+    }
+
+    /// <summary>
+    /// Displays the name of meal
+    /// </summary>
+    public void DisplayMealName(string _mealName)
+    {
+        mealNameText.text = _mealName;
+    }
+
+    /// <summary>
+    /// Displays the contents of the meal
+    /// </summary>
+    /// <param name="_ingredientList"></param>
+    public void DisplayMealIngredients(List<Ingredient> _ingredientList)
+    {
+        for (int i = 0; i < ingredientIconList.Count; i++)
+        {
+            ingredientIconList[i].sprite = _ingredientList[i].ingredientIcon;
+        }
+    }
+
+    /// <summary>
+    /// Displays the counts of the contents of the meal
+    /// </summary>
+    /// <param name="_ingredientCountList"></param>
+    public void DisplayIngredientCounts(List<int> _ingredientCountList)
+    {
+        for (int i = 0; i < ingredientIconList.Count; i++)
+        {
+            ingredientCountTextList[i].text = "x" + _ingredientCountList[i].ToString();
+        }
     }
 }

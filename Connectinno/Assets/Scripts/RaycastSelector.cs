@@ -39,12 +39,12 @@ public class RaycastSelector : MonoBehaviour
                         if (timeSinceLastClick <= DOUBLE_CLICK_TIME)
                         {
                             currentIngredient.PutToPan();
-                            Debug.Log("Double Tap : " + timeSinceLastClick);
+                            // Debug.Log("Double Tap : " + timeSinceLastClick);
                         }
                         else
                         {
                             currentIngredient.Grab();
-                            Debug.Log("Only Tap : " + timeSinceLastClick);
+                            // Debug.Log("Only Tap : " + timeSinceLastClick);
                         }
                     }
                 }

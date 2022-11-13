@@ -7,57 +7,68 @@ using DG.Tweening;
 public class Manager : MonoBehaviour
 {
     [Header("COIN")]
+    [Tooltip("Total coin count player have")]
     [SerializeField]
-    private float coinCount;
+    private int coinCount;
+    [Tooltip("Total coin count display player have")]
     [SerializeField]
     private TextMeshProUGUI coinText;
+    [Tooltip("Holds the coinCounText")]
     [SerializeField]
     private GameObject coinDisplay;
 
+    [Tooltip("Coin object prefab for coinEffect")]
     [SerializeField]
     private GameObject coinPrefab;
+    [Tooltip("Canvas on the scene for the generate coin")]
     [SerializeField]
     private GameObject canvas;
 
+    [Tooltip("Button for the open chest")]
+    [SerializeField]
+    private GameObject chestButton;
 
     [Header("LEVEL")]
+    [Tooltip("The level of player")]
     [SerializeField]
     private int level;
+    [Tooltip("The text display of level of player")]
     [SerializeField]
     private TextMeshProUGUI levelText;
+    [Tooltip("Holds the levelText")]
     [SerializeField]
     private GameObject levelDisplay;
 
-    [Header("Always-ON")]
+    [Header("MENUs")]
+    [Tooltip("Main Menu object in the scene")]
     [SerializeField]
-    private GameObject footer;
+    private GameObject mainMenu;
 
+    [Tooltip("settings Menu object in the scene")]
+    [SerializeField]
+    private GameObject settingsMenu;
 
-    //[Header("Settings Menu Elements")]
-    //[SerializeField]
-    //private GameObject settingsMenuTitle;
-    //[SerializeField]
-    //private GameObject hapticToggle;
-    //[SerializeField]
-    //private GameObject soundToggle;
+    [Tooltip("Shop Menu object in the scene")]
+    [SerializeField]
+    private GameObject shopMenu;
 
-    //[Header("Shop Menu Elements")]
-    //[SerializeField]
-    //private GameObject shopMenuTitle;
-    //[SerializeField]
-    //private GameObject scrollMenu;
+    [Header("Main Menu Effect")]
+    [SerializeField]
+    private GameObject panModel;
+    [Tooltip("All of ingredients model")]
+    [SerializeField]
+    private List<GameObject> ingredientModelListInThePan;
 
-    //[Header("Main Menu Elements")]
-    //[SerializeField]
-    //private GameObject mainMenuTitle;
-    //[SerializeField]
-    //private GameObject pan;
-    //[SerializeField]
-    //private GameObject playButton;
-    //[SerializeField]
-    //private GameObject chestButton;
-    //[SerializeField]
-    //private List<GameObject> foodsInThePan;
+    [Header("SFXs")]
+    [Tooltip("AudioSource for SFXs")]
+    [SerializeField]
+    private AudioSource audioSource;
+    [Tooltip("audioClips for Coin SFXs")]
+    [SerializeField]
+    private List<AudioClip> coinSFXList;
+    [Tooltip("SoundManager for All SFXs' Sound")]
+    [SerializeField]
+    private SoundManager soundManager;
 
     public static Manager singleton;
     private void Awake()
@@ -66,6 +77,14 @@ public class Manager : MonoBehaviour
         {
             singleton = this;
         }
+        LoadCoin();
+        LoadLevel();
+        Manager.singleton.ChestDeactive();
+        audioSource = GetComponent<AudioSource>();
+    }
+    private void Start()
+    {
+        OpenMainMenu();
     }
 
     /// <summary>
@@ -75,6 +94,7 @@ public class Manager : MonoBehaviour
     {
         coinCount += value;
         DisplayCoin();
+        PlayCoinSFX();
     }
 
     /// <summary>
@@ -84,6 +104,7 @@ public class Manager : MonoBehaviour
     {
         coinCount++;
         DisplayCoin();
+        PlayCoinSFX();
     }
 
     /// <summary>
@@ -94,14 +115,34 @@ public class Manager : MonoBehaviour
         coinText.text = coinCount.ToString();
     }
 
+    /// <summary>
+    /// Checks is coin greather than value
+    /// </summary>
+    /// <param name="_value"></param>
+    /// <returns></returns>
+    public bool CoinControl(int _value)
+    {
+        return coinCount > _value;
+    }
 
     /// <summary>
-    /// 
+    /// Decrese coin count amount value
+    /// </summary>
+    /// <param name="_value"></param>
+    public void BuySomething(int _value)
+    {
+        coinCount -= _value;
+        DisplayCoin();
+        SaveCoin();
+    }
+
+    /// <summary>
+    /// Generate a specified number of coins from the specfied position
     /// </summary>
     /// <param name="_count"></param>
     public void CoinEffect(int _count, Vector3 _generatePosition)
     {
-        Debug.Log("Coin Effect");
+        // Debug.Log(_count + " Coin Effect at " + _generatePosition);
         for (int i = 0; i < _count; i++)
         {
             float xPosition = UnityEngine.Random.Range(-150, 150);
@@ -115,133 +156,283 @@ public class Manager : MonoBehaviour
 
             currentCoin.transform.localScale = Vector3.zero;
 
-            currentCoin.transform.DOScale(1, 0.5f).OnComplete(() =>
-                currentCoin.transform.DOLocalMove(coinDisplay.transform.localPosition, 0.5f).OnComplete(() =>
-                    currentCoin.transform.DOScale(0, 0.15f).OnComplete(() =>
+            currentCoin.transform.DOScale(1, 0.5f).SetEase(Ease.OutBack).OnComplete(() =>
+                currentCoin.transform.DOLocalMove(coinDisplay.transform.localPosition, 0.5f).SetEase(Ease.InBack).OnComplete(() =>
+                    currentCoin.transform.DOScale(0, 0.15f).SetEase(Ease.InBack).OnComplete(() =>
                     IncreaseCoin())));
 
-            Debug.Log(i + " Coin Produced");
+            // Debug.Log(i + " Coin Produced");
         }
+        SaveCoin();
     }
 
-    public void DisplayLevel()
+    /// <summary>
+    /// Displays the player levet
+    /// </summary>
+    public void DisplayLevelText()
     {
-        levelText.text = "LEVEL - " + level;
+        Debug.Log("Level: " + level);
+        level = level % 12;
+        Debug.Log("Mod Level: " + level);
+        levelText.text = "LEVEL - " + (level + 1);
     }
 
+    /// <summary>
+    /// Move the levelText
+    /// </summary>
+    public void MoveLevelDisplay(Vector3 movePosition)
+    {
+        levelDisplay.transform.DOLocalMove(movePosition, 0.25f).SetEase(Ease.InOutBack);
+    }
+
+    /// <summary>
+    /// Allows t move to the next level
+    /// </summary>
     public void NextLevel()
     {
         level++;
-        DisplayLevel();
+        SaveLevel();
+        DisplayLevelText();
     }
 
-    ///// <summary>
-    ///// 
-    ///// </summary>
-    //public void MainMenuActive()
-    //{
-    //    mainMenuTitle.transform.DOScale(1, 0.25f);
-    //    pan.transform.DOLocalMove(Vector3.zero, 0.25f).OnComplete(() =>
-    //            mainMenuTitle.transform.DOScale(1, 0.25f)).OnComplete(() =>
-    //            FoodEffectActive());
-    //    playButton.transform.DOScale(1, 0.25f);
-    //    ChestActive();
-    //}
+    /// <summary>
+    /// Plays coin SFX
+    /// </summary>
+    public void PlayCoinSFX()
+    {
+        SetRandomPitch();
+        audioSource.PlayOneShot(coinSFXList[Random.Range(0, coinSFXList.Count)]);
+    }
 
-    ///// <summary>
-    ///// 
-    ///// </summary>
-    //public void MainMenuDeactive()
-    //{
-    //    mainMenuTitle.transform.DOScale(0, 0.25f);
-    //    pan.transform.DOLocalMove(new Vector3(1150, -500, 0), 0.25f).OnComplete(() =>
-    //              mainMenuTitle.transform.DOScale(0, 0.25f)).OnComplete(() =>
-    //              FoodEffectDeactive());
-    //    playButton.transform.DOScale(0, 0.25f);
-    //    ChestDeactive();
-    //}
 
-    ///// <summary>
-    ///// 
-    ///// </summary>
-    //private void FoodEffectActive()
-    //{
-    //    float amount = 0;
-    //    for (int i = 0; i < foodsInThePan.Count; i++)
-    //    {
-    //        amount += 25;
-    //        Vector3 foodPosition =
-    //            new Vector3(foodsInThePan[i].transform.localPosition.x -
-    //            UnityEngine.Random.Range(-150, 250) - amount,
-    //            foodsInThePan[i].transform.localPosition.y +
-    //            UnityEngine.Random.Range(0, 400) + amount, 0);
+    /// <summary>
+    /// Random Pitch for AudioSource
+    /// </summary>
+    public void SetRandomPitch()
+    {
+        audioSource.pitch = Random.Range(0.9f, 1.1f);
+    }
 
-    //        foodsInThePan[i].transform.DOLocalMove(foodPosition, 0.25f);
-    //    }
-    //}
+    #region MAIN MENU
 
-    ///// <summary>
-    ///// 
-    ///// </summary>
-    //private void FoodEffectDeactive()
-    //{
-    //    for (int i = 0; i < foodsInThePan.Count; i++)
-    //    {
-    //        foodsInThePan[i].transform.DOLocalMove(Vector3.zero, 0.15f);
-    //    }
-    //}
+    /// <summary>
+    /// starts the level
+    /// </summary>
+    public void PlayButton()
+    {
+        LevelManager.singleton.StartLevel();
+        CloseMainMenu();
+    }
 
-    ///// <summary>
-    ///// 
-    ///// </summary>
-    //private void ChestActive()
-    //{        
-    //    chestButton.transform.DOLocalMoveX(350, 0.25f);
-    //}
 
-    ///// <summary>
-    ///// 
-    ///// </summary>
-    //private void ChestDeactive()
-    //{        
-    //    chestButton.transform.DOLocalMoveX(750, 0.25f);
-    //}
+    /// <summary>
+    /// Opens the mainMenu
+    /// </summary>
+    public void OpenMainMenu()
+    {
+        OpenMainMenuEffect();
+        mainMenu.transform.DOLocalMoveY(0, 0.25f).SetEase(Ease.OutBack);
+        MoveLevelDisplay(new Vector3(0, 500, 0));
+        LevelManager.singleton.HideLevelEndObjects();
 
-    ///// <summary>
-    ///// 
-    ///// </summary>
-    //public void SettingsMenuActive()
-    //{
-    //    settingsMenuTitle.transform.DOScale(1, 0.25f);
-    //    soundToggle.transform.DOScale(1, 0.25f);
-    //    hapticToggle.transform.DOScale(1, 0.25f);
-    //}
+        CloseShopMenu();
+        CloseSettingsMenu();
+    }
 
-    ///// <summary>
-    ///// 
-    ///// </summary>
-    //public void SettingsMenuDeactive()
-    //{
-    //    settingsMenuTitle.transform.DOScale(0, 0.25f);
-    //    soundToggle.transform.DOScale(0, 0.25f);
-    //    hapticToggle.transform.DOScale(0, 0.25f);
-    //}
+    /// <summary>
+    /// Closes the mainMenu
+    /// </summary>
+    private void CloseMainMenu()
+    {
+        CloseMainMenuEffect();
+        mainMenu.transform.DOLocalMoveY(-1920, 0.25f).SetEase(Ease.InBack);
+    }
 
-    ///// <summary>
-    ///// 
-    ///// </summary>
-    //public void ShopMenuActive()
-    //{
-    //    shopMenuTitle.transform.DOScale(1, 0.25f);
-    //    scrollMenu.transform.DOScale(1, 0.25f);
-    //}
+    /// <summary>
+    /// starts the mainMenu effect
+    /// </summary>
+    private void OpenMainMenuEffect()
+    {
+        panModel.transform.DOLocalMoveY(-3, 0.25f).OnComplete(() =>
+            panModel.transform.DOLocalRotate(new Vector3(-30, 120, -30), 0.15f).OnComplete(() =>
+            IngredientEffectActive()));
+    }
 
-    ///// <summary>
-    ///// 
-    ///// </summary>
-    //public void ShopMenuDeactive()
-    //{
-    //    shopMenuTitle.transform.DOScale(0, 0.25f);
-    //    scrollMenu.transform.DOScale(0, 0.25f);
-    //}
+    /// <summary>
+    /// Finishs the mainMenu Effect
+    /// </summary>
+    private void CloseMainMenuEffect()
+    {
+        panModel.transform.DOLocalMoveY(-15, 0.25f).OnComplete(() =>
+            panModel.transform.DOLocalRotate(new Vector3(30, 120, 30), 0.15f).OnComplete(() =>
+            IngredientEffectDeactive()));
+    }
+
+    /// <summary>
+    /// Displays the ingredientsModel in pan
+    /// </summary>
+    private void IngredientEffectActive()
+    {
+        for (int i = 0; i < ingredientModelListInThePan.Count; i++)
+        {
+            ingredientModelListInThePan[i].transform.DOScale(0.75f, 0.75f);
+        }
+    }
+
+    /// <summary>
+    /// Hidesthe ingredientsModel in pan
+    /// </summary>
+    private void IngredientEffectDeactive()
+    {
+        for (int i = 0; i < ingredientModelListInThePan.Count; i++)
+        {
+            ingredientModelListInThePan[i].transform.DOScale(0, 0.25f);
+        }
+    }
+    #endregion
+
+    #region SHOP
+    /// <summary>
+    /// Opens the Shop Menu
+    /// </summary>
+    public void OpenShopMenu()
+    {
+        shopMenu.transform.DOLocalMoveX(0, 0.25f).SetEase(Ease.OutBack);
+        MoveLevelDisplay(new Vector3(0, 1400, 0));
+        CloseMainMenu();
+        CloseSettingsMenu();
+    }
+
+    /// <summary>
+    /// Closes the shop menu
+    /// </summary>
+    private void CloseShopMenu()
+    {
+        shopMenu.transform.DOLocalMoveX(-1080, 0.25f).SetEase(Ease.InBack);
+    }
+    #endregion
+
+    #region SETTINGS
+
+    /// <summary>
+    /// Opens the setting menu
+    /// </summary>
+    public void OpenSettingsMenu()
+    {
+        settingsMenu.transform.DOLocalMoveX(0, 0.25f).SetEase(Ease.OutBack);
+        MoveLevelDisplay(new Vector3(0, 1400, 0));
+        CloseMainMenu();
+        CloseShopMenu();
+    }
+
+    /// <summary>
+    /// Closes the setting menu
+    /// </summary>
+    private void CloseSettingsMenu()
+    {
+        settingsMenu.transform.DOLocalMoveX(1080, 0.25f).SetEase(Ease.InBack);
+    }
+
+    /// <summary>
+    /// Manages vibration with toggle
+    /// </summary>
+    /// <param name="toggleValue"></param>
+    public void HapticToggle(bool toggleValue)
+    {
+        Vibrator.HapticControl(toggleValue);
+    }
+
+    /// <summary>
+    /// Manages sound with toggle
+    /// /// </summary>
+    /// <param name="toggleValue"></param>
+    public void SoundToggle(bool toggleValue)
+    {
+        Debug.Log("Sound Toogle: " + toggleValue);
+        if (toggleValue)
+        {
+            soundManager.SetVolume(20);
+        }
+        else
+        {
+            soundManager.SetVolume(-80);
+        }
+    }
+    #endregion
+
+    #region CHEST
+
+    /// <summary>
+    /// Checks the chest button state
+    /// </summary>
+    public void ControlChest()
+    {
+        Debug.Log("Level: " + level + " Chest State: " + (level % 3 == 0));
+        if (level % 3 == 0)
+        {
+            ChestActive();
+        }
+        else
+        {
+            ChestDeactive();
+        }
+    }
+
+    /// <summary>
+    /// Displays th echest button
+    /// </summary>
+    public void ChestActive()
+    {
+        chestButton.transform.DOLocalMoveX(350, 0.25f);
+    }
+
+    /// <summary>
+    /// Hides the chest button
+    /// </summary>
+    public void ChestDeactive()
+    {
+        chestButton.transform.DOLocalMoveX(750, 0.25f);
+    }
+    #endregion
+
+    #region SAVE&LOAD GAME
+
+    #region COIN
+    /// <summary>
+    /// Saves the total coin count
+    /// </summary>
+    public void SaveCoin()
+    {
+        PlayerPrefs.SetInt("COIN_COUNT", coinCount);
+    }
+
+    /// <summary>
+    /// Loads the total coin count
+    /// </summary>
+    public void LoadCoin()
+    {
+        coinCount = PlayerPrefs.GetInt("COIN_COUNT");
+        DisplayCoin();
+    }
+    #endregion
+
+    #region LEVEL
+    /// <summary>
+    /// Saves the player level
+    /// </summary>
+    public void SaveLevel()
+    {
+        PlayerPrefs.SetInt("LEVEL", level);
+    }
+    /// <summary>
+    /// loads the player level
+    /// </summary>
+    public void LoadLevel()
+    {
+        level = PlayerPrefs.GetInt("LEVEL");
+        DisplayLevelText();
+    }
+    #endregion
+
+    #endregion
 }

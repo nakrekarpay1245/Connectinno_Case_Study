@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Vibrator 
+public class Vibrator
 {
 
 #if UNITY_ANDROID && !UNITY_EDITOR
@@ -14,7 +14,7 @@ public class Vibrator
     public static AndroidJavaObject vibrator;
 #endif
 
-    public static bool isHapticActive;
+    public static bool isHapticActive = false;
 
     public static void Vibrate(long milliseconds = 250)
     {

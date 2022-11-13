@@ -7,25 +7,38 @@ using TMPro;
 public class MealManager : MonoBehaviour
 {
     [Header("User Interface")]
+    [Tooltip("Display list of all ingredients")]
     [SerializeField]
     private List<Image> ingredientIconList;
+    [Tooltip("Display list of count of all ingredients")]
     [SerializeField]
     private List<TextMeshProUGUI> ingredientCountTextList;
+    [Tooltip("Meal name display")]
     [SerializeField]
     private TextMeshProUGUI mealNameText;
 
+    [Tooltip("Minimum meal count on current level")]
     [Range(2, 5)]
     [SerializeField]
+    private int minMealCount;
+    [Tooltip("Maximum meal count on current level")]
+    [Range(2, 5)]
+    [SerializeField]
+    private int maxMealCount;
+    //Meal count on current level
     private int mealCount;
 
     [SerializeField]
     private Meal mealPrefab;
+
+    [Tooltip("Locations where the meals will generate")]
     [SerializeField]
     private List<Transform> mealTransformList;
 
+    [Tooltip("List of generated meals")]
     public List<Meal> mealList;
 
-    // PRIVATE PARAMETERS
+    // PRIVATE PARAMETERS    
     private int mealIndex;
     private Meal currentMeal;
 
@@ -38,18 +51,13 @@ public class MealManager : MonoBehaviour
         }
     }
 
-
-    //GEÇÝCÝ
-    private void Update()
+    /// <summary>
+    /// Sets Randomly Meal Count between minimum and maxium meal count
+    /// </summary>
+    public void SetMealCount()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            GenerateMeal();
-        }
-        if (Input.GetKeyDown(KeyCode.P))
-        {
-            FoodGenerator.singleton.GenerateObjectRandomPosition(100);
-        }
+        mealCount = Random.Range(minMealCount, (maxMealCount + 1));
+        Debug.Log("MC : " + mealCount);
     }
 
     /// <summary>
@@ -57,13 +65,16 @@ public class MealManager : MonoBehaviour
     /// </summary>
     public void GenerateMeal()
     {
+        SetMealCount();
         for (int i = 0; i < mealCount; i++)
         {
             Meal _meal = Instantiate(mealPrefab, mealTransformList[i].position, Quaternion.identity);
+            _meal.transform.parent = mealTransformList[i];
             mealList.Add(_meal);
         }
         currentMeal = mealList[0];
         currentMeal.SetMeal();
+        currentMeal.StartMeal();
         DisplayMealIngredients(currentMeal.ingredientsInMeal);
         DisplayIngredientCounts(currentMeal.ingredientsCount);
         DisplayMealName(currentMeal.GetMealName());
@@ -79,15 +90,33 @@ public class MealManager : MonoBehaviour
         {
             Debug.Log("Level Completed");
             LevelManager.singleton.FinishLevel(true);
+            FinishMeals();
         }
         else
         {
             Debug.Log("Next Meal");
             currentMeal = mealList[mealIndex];
             currentMeal.SetMeal();
+            currentMeal.StartMeal();
             DisplayMealIngredients(currentMeal.ingredientsInMeal);
             DisplayIngredientCounts(currentMeal.ingredientsCount);
             DisplayMealName(currentMeal.GetMealName());
+        }
+    }
+
+
+    /// <summary>
+    /// Removes completed meal from the list
+    /// </summary>
+    public void FinishMeals()
+    {
+        mealIndex = 0;
+        int _count = mealList.Count;
+
+        for (int i = 0; i < _count; i++)
+        {
+            mealList[mealList.Count - 1].FinishMeal();
+            mealList.Remove(mealList[mealList.Count - 1]);
         }
     }
 

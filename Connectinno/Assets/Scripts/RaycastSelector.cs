@@ -5,18 +5,22 @@ using UnityEngine;
 public class RaycastSelector : MonoBehaviour
 {
     // CONSTANTS
-    private const float DOUBLE_CLICK_TIME = 0.2f;
+    private const float DOUBLE_CLICK_TIME = 0.35f;
 
     // PRIVATE PARAMETERS
+    // Keeps the raycast position
     private Vector3 raycastPosition;
 
     private RaycastHit raycastHit;
     private Ray ray;
 
+    // Main camera
     private Camera raycastCamera;
 
+    // Selected Ingrediet
     private Ingredient currentIngredient;
 
+    // LAstClick time for SoubleClick
     private float lastClickTime;
 
     private void Awake()

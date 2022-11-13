@@ -1,15 +1,15 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
 
 public class Ingredient : MonoBehaviour
 {
     [Header("Type")]
+    [Tooltip("The picture of ingredient")]
     public Sprite ingredientIcon;
 
     [SerializeField]
+    [Tooltip("The name of ingredient")]
     private string ingredientName;
 
     [Header("Components")]
@@ -17,11 +17,14 @@ public class Ingredient : MonoBehaviour
     private Collider collider;
 
     // PRIVATE PARAMETERS
+    // The final position before the start of the action
     private Vector3 lastPosition;
+    // Indicates whether into the pand or not
     private bool isInPan;
+    // Indicates whether held or not
     private bool isGrab;
 
-    //GEÇÝCÝ
+    // Reference to pan transform for the knowledge that he enetered or not
     private Transform panTransform;
     private void Awake()
     {
@@ -30,14 +33,8 @@ public class Ingredient : MonoBehaviour
         panTransform = GameObject.FindWithTag("Pan").transform;
     }
 
-    private void Start()
-    {
-        StartIngredient();
-        // LevelManager.singleton.AddFood(this);
-    }
-
     /// <summary>
-    /// Sets the lst position
+    /// Sets the last position
     /// </summary>
     /// <param name="position"></param>
     private void SetLastPosition(Vector3 position)
@@ -59,7 +56,8 @@ public class Ingredient : MonoBehaviour
     /// </summary>
     public void FinishIngredient()
     {
-        transform.DOScale(0, 0.15f);
+        transform.DOScale(0, 0.15f).SetEase(Ease.InBack);
+        Destroy(gameObject, 1);
         // Debug.Log(name + "finished");
     }
 
@@ -79,10 +77,11 @@ public class Ingredient : MonoBehaviour
     {
         // Debug.Log("Grab");
         isGrab = true;
+        IngredientManager.singleton.PlayGrabSound();
     }
 
     /// <summary>
-    /// Deags into the incoming position
+    /// Drags into the incoming position
     /// </summary>
     /// <param name="mousePosition"></param>
     public void Drag(Vector3 _position)
@@ -104,10 +103,6 @@ public class Ingredient : MonoBehaviour
             {
                 BackToLastPosition();
             }
-            //else
-            //{
-            //    Debug.Log("Nothing! ");
-            //}
         }
     }
 
@@ -142,6 +137,7 @@ public class Ingredient : MonoBehaviour
         {
             // Debug.Log("Nothing! ");
             collider.enabled = false;
+            IngredientManager.singleton.PlayFrySound();
         }
         else
         {

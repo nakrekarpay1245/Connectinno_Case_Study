@@ -1,38 +1,56 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 
 public class Meal : MonoBehaviour
 {
+    [Header("Ingredient Lists")]
     [Tooltip("Holds the names of meals")]
     [SerializeField]
     private List<string> mealNameList;
+    // Name of the meal
     private string mealName;
 
     [Tooltip("Assign all ingredient prefabs to this list")]
     [SerializeField]
     private List<Ingredient> ingredientPrefabs;
 
-    [Tooltip("Food indicators int the upper menu")]
+    [Tooltip("Meal contents")]
     public List<Ingredient> ingredientsInMeal;
+    [Tooltip("Meal contents count")]
     public List<int> ingredientsCount;
+    // Total meal contents count
     public int totalIngredientsCount;
 
-    //[Tooltip("Ingredient indicators int the upper menu")]
-    //[SerializeField]
-    //private List<FoodDisplay> foodDisplays;
+    [Tooltip("Holds the models of meals")]
+    [SerializeField]
+    private List<GameObject> mealModelList;
+    private GameObject mealModel;
+
+    [Tooltip("Meal Steam Particle")]
+    [SerializeField]
+    private ParticleSystem steamParticle;
+    [Tooltip("Meal Done Particle")]
+    [SerializeField]
+    private ParticleSystem doneParticle;
+
+    private void Awake()
+    {
+        steamParticle = GetComponentInChildren<ParticleSystem>();
+    }
 
     /// <summary>
-    /// Select and shows random 3 through all foods
+    /// Randomly choose three ingredients
     /// </summary>
     public void SetMeal()
     {
         ingredientsInMeal.Clear();
         ingredientsCount.Clear();
-        // LevelManager.singleton.DisplayMealName(meals[Random.Range(0, meals.Count)]);
+        int randomIndex = 0;
         for (int i = 0; i < 3; i++)
         {
-            int randomIndex = Random.Range(0, ingredientPrefabs.Count);
+            randomIndex = Random.Range(0, ingredientPrefabs.Count);
             if (!ingredientsInMeal.Contains(ingredientPrefabs[randomIndex]))
             {
                 ingredientsInMeal.Add(ingredientPrefabs[randomIndex]);
@@ -41,12 +59,20 @@ public class Meal : MonoBehaviour
             else
             {
                 SetMeal();
+                break;
             }
         }
-        mealName = mealNameList[Random.Range(0, mealNameList.Count)];
+        for (int i = 0; i < 3; i++)
+        {
+            IngredientManager.singleton.GenerateIngredients(ingredientsInMeal[i], ingredientsCount[i]);
+        }
+        randomIndex = Random.Range(0, mealNameList.Count);
+        mealName = mealNameList[randomIndex];
+        mealModel = Instantiate(mealModelList[randomIndex], transform.position, Quaternion.identity);
+        mealModel.transform.parent = transform;
+        mealModel.transform.DOScale(0, 0);
         IsMealDone();
         // Debug.Log("Meal = In 1: " + ingredientsInMeal[0].GetIngredientName() + " Count" + ingredientsCount[0] + " In 2: " + ingredientsInMeal[1].GetIngredientName() + " Count" + ingredientsCount[1] + " In 3: " + ingredientsInMeal[2].GetIngredientName() + " Count" + ingredientsCount[2]);
-        // StartCoroutine(FoodGenerator.singleton.GenerateFoods(selectedFoods));
     }
 
     /// <summary>
@@ -57,7 +83,7 @@ public class Meal : MonoBehaviour
     public bool ControlMeal(Ingredient _ingredient)
     {
         if (ingredientsInMeal[0].GetIngredientName() == _ingredient.GetIngredientName() &&
-           ingredientsCount[0] > 0)
+                ingredientsCount[0] > 0)
         {
             ingredientsCount[0]--;
             //Debug.Log("Sended: " + _ingredient + " ingredientInMeal[0]: " + ingredientsInMeal[0]);
@@ -72,7 +98,7 @@ public class Meal : MonoBehaviour
             return true;
         }
         else if (ingredientsInMeal[1].GetIngredientName() == _ingredient.GetIngredientName() &&
-            ingredientsCount[1] > 0)
+                ingredientsCount[1] > 0)
         {
             ingredientsCount[1]--;
             //Debug.Log("Sended: " + _ingredient + " ingredientInMeal[0]: " + ingredientsInMeal[0]);
@@ -87,7 +113,7 @@ public class Meal : MonoBehaviour
             return true;
         }
         else if (ingredientsInMeal[2].GetIngredientName() == _ingredient.GetIngredientName() &&
-            ingredientsCount[2] > 0)
+                ingredientsCount[2] > 0)
         {
             ingredientsCount[2]--;
             //Debug.Log("Sended: " + _ingredient + " ingredientInMeal[0]: " + ingredientsInMeal[0]);
@@ -133,8 +159,30 @@ public class Meal : MonoBehaviour
         }
         if (totalIngredientsCount <= 0)
         {
+            mealModel.transform.DOScale(1, 0.15f);
             MealManager.singleton.NextMeal();
+            steamParticle.Play();
+            doneParticle.Play();
         }
-        Debug.Log("Total Ingredients In Meal: " + totalIngredientsCount);
+        // Debug.Log("Total Ingredients In Meal: " + totalIngredientsCount);
+    }
+
+    /// <summary>
+    /// The size raises from zero to normal
+    /// </summary>
+    public void StartMeal()
+    {
+        transform.DOScale(1, 0.15f);
+        // Debug.Log(name + "started");
+    }
+
+    /// <summary>
+    /// The size raises from normal to zero
+    /// </summary>
+    public void FinishMeal()
+    {
+        transform.DOScale(0, 0.15f);
+        Destroy(gameObject, 1);
+        // Debug.Log(name + "finished");
     }
 }
